@@ -499,22 +499,43 @@
         
         //Update mehtode from local file
         foreach($read_minons as $minion){
-            $database->update($table,[
-                "method" => $minion->method,
-                "method_description_en" => $minion->method_description_en,
-                "method_description_fr" => $minion->method_description_fr,
-                "method_description_de" => $minion->method_description_de,
-                "method_description_ja" => $minion->method_description_ja],
-                ["id[=]"=>$minion->id]);
+            if($minion->method != null){
+                $table_name = $table."_methode";
+                $db_methode = $database->get($table_name,["methode"],["m_id[=]"=>$minion->id]);
+                if(empty($db_methode)){
+                    $database->insert($table_name,[
+                        "m_id"=>$minion->id,
+                        "method"=>$minion->method,
+                        "method_description_en" => $minion->method_description_en,
+                        "method_description_fr" => $minion->method_description_fr,
+                        "method_description_de" => $minion->method_description_de,
+                        "method_description_ja" => $minion->method_description_ja]);
+                }
+                else{
+                    $database->update($table_name,[
+                        "method_description_en" => $minion->method_description_en,
+                        "method_description_fr" => $minion->method_description_fr,
+                        "method_description_de" => $minion->method_description_de,
+                        "method_description_ja" => $minion->method_description_ja],
+                        ["AND" =>["m_id[=]"=>$minion->id,"method[=]"=>$minion->method]]);
+                }
+            }
         }
         
         if(!$readOnly){
             //Save the database in the file / update new minions to file
-            $minions = $database->select($table,
-                ["id","name","method","method_description_en","method_description_fr",
-                "method_description_de","method_description_ja"]);
-            $json_informations = json_encode($minions,JSON_PRETTY_PRINT);
-            file_put_contents($file, $json_informations);
+            $minions = $database->select($table,["id","name"]);
+            $minion_methodes = array();
+            foreach($minions as $minion){
+                $methodes = $database->select($table."_methode",["method","method_description_en",
+                        "method_description_fr","method_description_de","method_description_ja"],["m_id[=]"=>$minion["id"]]);
+                $methodes = $methodes ? $methodes : array("method"=>null,"method_description_en"=>null,
+                        "method_description_fr"=>null,"method_description_de"=>null,"method_description_ja"=>null);
+                $minion_method = array("id"=>$minion["id"],"name"=>$minion["name"],"methodes"=>$methodes);
+                $minion_methodes[] = $minion_method;
+            }
+            $json_informations = json_encode($minion_methodes,JSON_PRETTY_PRINT);
+            file_put_contents($file.".new", $json_informations);
         }
     }
 ?>

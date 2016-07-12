@@ -26,6 +26,8 @@ $database->query("CREATE TABLE minions (
         PRIMARY KEY ( id )
         );");
         
+
+        
 $database->query("CREATE TABLE mounts (
         id INT NOT NULL,
         name VARCHAR(100) NOT NULL,
@@ -76,6 +78,28 @@ $database->query("CREATE TABLE player_mounts (
         m_id INT NOT NULL,
         primary key (p_id, m_id),
         FOREIGN KEY (p_id) REFERENCES players(id),
+        FOREIGN KEY (m_id) REFERENCES mounts(id)
+        );");
+        
+$database->query("CREATE TABLE minions_methode (
+        m_id INT NOT NULL,
+        method VARCHAR(100),
+        method_description_en TEXT,
+        method_description_fr TEXT,
+        method_description_de TEXT,
+        method_description_ja TEXT,
+        primary key (m_id, method),
+        FOREIGN KEY (m_id) REFERENCES minions(id)
+        );");
+        
+$database->query("CREATE TABLE mounts_methode (
+        m_id INT NOT NULL,
+        method VARCHAR(100),
+        method_description_en TEXT,
+        method_description_fr TEXT,
+        method_description_de TEXT,
+        method_description_ja TEXT,
+        primary key (m_id, method),
         FOREIGN KEY (m_id) REFERENCES mounts(id)
         );");
 $updateMinions = $_GET["update"];
